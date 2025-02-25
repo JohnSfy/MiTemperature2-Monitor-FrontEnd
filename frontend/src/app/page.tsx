@@ -1,0 +1,226 @@
+"use client";
+import { useEffect, useState } from "react";
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
+} from "recharts";
+
+export default function Page() {
+  const [sensors, setSensors] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState("All");
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch("http://localhost:3000/sensors");
+      const data = await response.json();
+      setSensors(data);
+    }
+    fetchData();
+  }, []);
+
+  // Sort sensors by timestamp (latest first)
+  const sortedSensors = [...sensors].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  // Get the most recent sensor data for each room
+  const mostRecentData = sortedSensors.filter((sensor, index, self) => 
+    index === self.findIndex((s) => s.sensor_name === sensor.sensor_name)
+  );
+
+  // Filter for selected room (Table view)
+  const filteredData = selectedRoom === "All" 
+    ? mostRecentData 
+    : mostRecentData.filter((sensor: any) => sensor.sensor_name === selectedRoom);
+
+  // Get unique room names for the dropdown
+  const rooms = Array.from(new Set(sensors.map((s: any) => s.sensor_name)));
+
+  // Define colors for rooms for the charts
+  const roomColors = [
+    "#2563EB", "#F59E0B", "#10B981", "#3B82F6", "#EF4444", "#9B1D20", 
+    "#6B7280", "#8B5CF6", "#EC4899", "#4ADE80"
+  ];
+
+  // Group data by room for charting
+  const roomsData = rooms.reduce((acc, room) => {
+    acc[room] = sensors.filter((sensor) => sensor.sensor_name === room);
+    return acc;
+  }, {});
+
+  // Get filtered data for the selected room
+  const selectedRoomData = selectedRoom === "All" ? sortedSensors : roomsData[selectedRoom];
+
+  // Sort the data by timestamp in ascending order (oldest on the left, newest on the right)
+  const sortedDataByTime = selectedRoomData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  return (
+    <div className="sensor-dashboard">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        📊 Sensor Dashboard
+      </h1>
+
+      {/* Filter Dropdown */}
+      <div className="filter-dropdown">
+        <select
+          onChange={(e) => setSelectedRoom(e.target.value)}
+        >
+          <option value="All" className="text-black">All Rooms</option>
+          {rooms.map((room) => (
+            <option key={room} value={room} className="text-black">{room}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Data Grid for the selected room (Most recent data) */}
+      <div className="data-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredData.map((sensor: any, index) => (
+          <div
+            key={index}
+            className="sensor-card bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-xl hover:from-blue-700 hover:to-indigo-700"
+          >
+            <div className="space-y-4 text-white">
+              {/* Room Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">Room:</strong>
+                <span className="font-light">{sensor.sensor_name}</span>
+              </div>
+
+              {/* Temperature Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">Temperature (°C):</strong>
+                <span className="font-light">{sensor.temperature}</span>
+              </div>
+
+              {/* Humidity Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">Humidity (%):</strong>
+                <span className="font-light">{sensor.humidity}</span>
+              </div>
+
+              {/* Battery Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">Battery (%):</strong>
+                <span className="font-light">{sensor.battery_percent}</span>
+              </div>
+
+              {/* RSSI Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">RSSI:</strong>
+                <span className="font-light">{sensor.rssi}</span>
+              </div>
+
+              {/* Timestamp Info */}
+              <div className="sensor-info flex justify-between">
+                <strong className="font-semibold">Timestamp:</strong>
+                <span className="font-light">{new Date(sensor.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Section (Showing only selected room data in charts) */}
+      <div className="chart-section">
+        {/* Temperature Line Chart for selected room */}
+        <div className="chart-container">
+          <h2 className="text-lg font-semibold text-gray-800">📈 Temperature Trend</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={sortedDataByTime}>
+              <XAxis 
+                dataKey="timestamp" 
+                tickFormatter={(t) => new Date(t).toLocaleString()}
+                interval="preserveStartEnd"
+              />
+              <YAxis />
+              <Tooltip 
+                labelFormatter={(t) => new Date(t).toLocaleString()}
+                contentStyle={{
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  borderRadius: '5px',
+                  padding: '10px'
+                }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="temperature"
+                name={selectedRoom}
+                data={sortedDataByTime}
+                stroke={roomColors[0]}
+                strokeWidth={2}
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Humidity Levels Over Time Line Chart for selected room */}
+        <div className="chart-container">
+          <h2 className="text-lg font-semibold text-gray-800">💧 Humidity Levels Over Time</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={sortedDataByTime}>
+              <XAxis 
+                dataKey="timestamp" 
+                tickFormatter={(t) => new Date(t).toLocaleString()}
+                interval="preserveStartEnd"
+              />
+              <YAxis />
+              <Tooltip 
+                labelFormatter={(t) => new Date(t).toLocaleString()}
+                contentStyle={{
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  borderRadius: '5px',
+                  padding: '10px'
+                }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="humidity"
+                name={selectedRoom}
+                data={sortedDataByTime}
+                stroke={roomColors[1]}
+                strokeWidth={2}
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Battery Levels Over Time Line Chart for selected room */}
+        <div className="chart-container">
+          <h2 className="text-lg font-semibold text-gray-800">🔋 Battery Levels Over Time</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={sortedDataByTime}>
+              <XAxis 
+                dataKey="timestamp" 
+                tickFormatter={(t) => new Date(t).toLocaleString()}
+                interval="preserveStartEnd"
+              />
+              <YAxis />
+              <Tooltip 
+                labelFormatter={(t) => new Date(t).toLocaleString()}
+                contentStyle={{
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  borderRadius: '5px',
+                  padding: '10px'
+                }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="battery_percent"
+                name={selectedRoom}
+                data={sortedDataByTime}
+                stroke={roomColors[2]}
+                strokeWidth={2}
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
