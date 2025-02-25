@@ -4,8 +4,18 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
 
+// Define the shape of the sensor data
+interface Sensor {
+  timestamp: string;
+  sensor_name: string;
+  temperature: number;
+  humidity: number;
+  battery_percent: number;
+  rssi: number;
+}
+
 export default function Page() {
-  const [sensors, setSensors] = useState([]);
+  const [sensors, setSensors] = useState<Sensor[]>([]);
   const [selectedRoom, setSelectedRoom] = useState("All");
 
   useEffect(() => {
@@ -18,20 +28,20 @@ export default function Page() {
   }, []);
 
   // Sort sensors by timestamp (latest first)
-  const sortedSensors = [...sensors].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const sortedSensors = [...sensors].sort((a: Sensor, b: Sensor) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   // Get the most recent sensor data for each room
-  const mostRecentData = sortedSensors.filter((sensor, index, self) => 
+  const mostRecentData = sortedSensors.filter((sensor: Sensor, index, self) => 
     index === self.findIndex((s) => s.sensor_name === sensor.sensor_name)
   );
 
   // Filter for selected room (Table view)
   const filteredData = selectedRoom === "All" 
     ? mostRecentData 
-    : mostRecentData.filter((sensor: any) => sensor.sensor_name === selectedRoom);
+    : mostRecentData.filter((sensor: Sensor) => sensor.sensor_name === selectedRoom);
 
   // Get unique room names for the dropdown
-  const rooms = Array.from(new Set(sensors.map((s: any) => s.sensor_name)));
+  const rooms = Array.from(new Set(sensors.map((s: Sensor) => s.sensor_name)));
 
   // Define colors for rooms for the charts
   const roomColors = [
@@ -43,13 +53,13 @@ export default function Page() {
   const roomsData = rooms.reduce((acc, room) => {
     acc[room] = sensors.filter((sensor) => sensor.sensor_name === room);
     return acc;
-  }, {});
+  }, {} as Record<string, Sensor[]>);
 
   // Get filtered data for the selected room
   const selectedRoomData = selectedRoom === "All" ? sortedSensors : roomsData[selectedRoom];
 
   // Sort the data by timestamp in ascending order (oldest on the left, newest on the right)
-  const sortedDataByTime = selectedRoomData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const sortedDataByTime = selectedRoomData.sort((a: Sensor, b: Sensor) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   return (
     <div className="sensor-dashboard">
@@ -71,7 +81,7 @@ export default function Page() {
 
       {/* Data Grid for the selected room (Most recent data) */}
       <div className="data-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredData.map((sensor: any, index) => (
+        {filteredData.map((sensor: Sensor, index) => (
           <div
             key={index}
             className="sensor-card bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-xl hover:from-blue-700 hover:to-indigo-700"
