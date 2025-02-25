@@ -19,6 +19,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  flex-direction: column; /* Ensure content stacks vertically on small screens */
 }
 
 /* Grid layout for the data grid */
@@ -40,7 +41,7 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   color: var(--text-color);
   transition: all 0.3s ease-in-out;
-  
+  flex-direction: column; /* Ensure card elements are stacked vertically */
 }
 
 /* Subtle hover effect for cards */
@@ -92,10 +93,6 @@ body {
 .sensor-card {
   border-radius: var(--border-radius);
 }
-
-
-
-
 
 /* Style for the filter dropdown container */
 .filter-dropdown {
@@ -163,4 +160,59 @@ body {
 .filter-dropdown option:hover {
   background-color: var(--primary-color);
   color: var(--bg-color);
+}
+
+/* Responsive Styles */
+
+/* For small screens (mobile) */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+
+  .data-grid {
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .filter-dropdown {
+    width: 100%; /* Ensure the dropdown takes full width */
+    margin-bottom: 1.5rem;
+  }
+
+  .sensor-card {
+    padding: 1rem; /* Slightly smaller padding for smaller screens */
+  }
+
+  .sensor-info {
+    font-size: 0.9rem; /* Slightly smaller text for better mobile readability */
+  }
+
+  .chart-section {
+    margin-top: 2rem;
+  }
+
+  .chart-container {
+    margin-bottom: 2rem;
+  }
+}
+
+/* For even smaller screens (very mobile or extra small devices) */
+@media (max-width: 480px) {
+  .data-grid {
+    grid-template-columns: 1fr; /* Stack the cards vertically */
+    padding: 0 0.5rem;
+  }
+
+  .sensor-card {
+    padding: 0.75rem; /* Even smaller padding */
+  }
+
+  .sensor-info {
+    font-size: 0.85rem; /* Smaller font for extra small screens */
+  }
+
+  .filter-dropdown {
+    width: 100%; /* Full width for dropdown */
+  }
 }
