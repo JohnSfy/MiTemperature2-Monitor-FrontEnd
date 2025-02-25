@@ -10,7 +10,7 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("http://localhost:3000/sensors");
+      const response = await fetch("https://crucial-lelah-tsigkani2-80186950.koyeb.app/sensors");
       const data = await response.json();
       setSensors(data);
     }
