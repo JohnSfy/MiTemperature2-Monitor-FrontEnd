@@ -73,7 +73,7 @@ export default function Page() {
 
   // Sort the data by timestamp in ascending order (oldest on the left, newest on the right)
   const sortedDataByTime = selectedRoomData.sort(
-    (a: Sensor, b: Sensor) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    (a: Sensor, b: Sensor) => new Date(a.timestamp).getTime() - new Date(a.timestamp).getTime(),
   )
 
   return (
@@ -143,12 +143,12 @@ export default function Page() {
       </div>
 
       {/* Charts Section (Showing only selected room data in charts) */}
-      <div className="chart-section mt-8 w-full px-4">
+      <div className="chart-section mt-8 w-full">
         {/* Temperature Line Chart for selected room */}
-        <div className="chart-container mb-8">
+        <div className="chart-container">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">📈 Temperature Trend</h2>
-          <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sortedDataByTime}>
                 <XAxis
                   dataKey="timestamp"
@@ -181,10 +181,10 @@ export default function Page() {
         </div>
 
         {/* Humidity Levels Over Time Line Chart for selected room */}
-        <div className="chart-container mb-8">
+        <div className="chart-container">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">💧 Humidity Levels Over Time</h2>
-          <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sortedDataByTime}>
                 <XAxis
                   dataKey="timestamp"
@@ -217,10 +217,10 @@ export default function Page() {
         </div>
 
         {/* Battery Levels Over Time Line Chart for selected room */}
-        <div className="chart-container mb-8">
+        <div className="chart-container">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">🔋 Battery Levels Over Time</h2>
-          <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sortedDataByTime}>
                 <XAxis
                   dataKey="timestamp"
