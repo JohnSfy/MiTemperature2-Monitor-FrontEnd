@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import "./globals.css"
 
+
 // Define the shape of the sensor data
 interface Sensor {
   timestamp: string
@@ -27,9 +28,7 @@ export default function Page() {
   }, [])
 
   // Sort sensors by timestamp (latest first)
-  const sortedSensors = [...sensors].sort(
-    (a: Sensor, b: Sensor) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  )
+  const sortedSensors = [...sensors].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
   // Get the most recent sensor data for each room
   const mostRecentData = sortedSensors.filter(
@@ -73,7 +72,7 @@ export default function Page() {
 
   // Sort the data by timestamp in ascending order (oldest on the left, newest on the right)
   const sortedDataByTime = selectedRoomData.sort(
-    (a: Sensor, b: Sensor) => new Date(a.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   )
 
   return (
