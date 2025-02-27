@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import "./globals.css"
 
-
 // Define the shape of the sensor data
 interface Sensor {
   timestamp: string
@@ -12,17 +11,30 @@ interface Sensor {
   humidity: number
   battery_percent: number
   rssi: number
+  raspberry_pi_temperature: number // Added this field
 }
 
 export default function Page() {
   const [sensors, setSensors] = useState<Sensor[]>([])
   const [selectedRoom, setSelectedRoom] = useState("All")
+  const [latestPiTemperature, setLatestPiTemperature] = useState<number | null>(null) // Store the last raspberry_pi_temperature
 
   useEffect(() => {
     async function fetchData() {
       const response = await fetch("https://crucial-lelah-tsigkani2-80186950.koyeb.app/sensors")
       const data = await response.json()
       setSensors(data)
+
+      // Find the most recent raspberry_pi_temperature measurement
+      const latestPi = data.reduce((latest: Sensor, sensor: Sensor) => {
+        if (sensor.raspberry_pi_temperature && (!latest || new Date(sensor.timestamp) > new Date(latest.timestamp))) {
+          return sensor
+        }
+        return latest
+      }, {} as Sensor) // Explicitly type the initial value as a Sensor
+      
+
+      setLatestPiTemperature(latestPi.raspberry_pi_temperature)
     }
     fetchData()
   }, [])
@@ -77,13 +89,23 @@ export default function Page() {
 
   return (
     <div className="sensor-dashboard w-full max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">📊 Sensor Dashboard</h1>
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">📊 Ενδείξεις Θερμομέτρων Mi Temperature 2</h1>
+
+      {/* Display the latest Raspberry Pi temperature */}
+      <div className="latest-pi-temp text-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-800">🖥️ Θερμοκρασία Raspberry Pi</h2>
+        <p className="text-xl font-light text-gray-600">
+          {latestPiTemperature !== null
+            ? `${latestPiTemperature} °C`
+            : "No Raspberry Pi temperature data available"}
+        </p>
+      </div>
 
       {/* Filter Dropdown */}
       <div className="filter-dropdown w-full max-w-xs mx-auto mb-6">
         <select onChange={(e) => setSelectedRoom(e.target.value)} className="w-full p-2 rounded-md">
           <option value="All" className="text-black">
-            All Rooms
+            Όλοι οι Χώροι
           </option>
           {rooms.map((room) => (
             <option key={room} value={room} className="text-black">
@@ -103,25 +125,25 @@ export default function Page() {
             <div className="space-y-4 text-white">
               {/* Room Info */}
               <div className="sensor-info flex justify-between">
-                <strong className="font-semibold">Room:</strong>
+                <strong className="font-semibold">Χώρος:</strong>
                 <span className="font-light">{sensor.sensor_name}</span>
               </div>
 
               {/* Temperature Info */}
               <div className="sensor-info flex justify-between">
-                <strong className="font-semibold">Temperature (°C):</strong>
+                <strong className="font-semibold">Θερμοκρασία (°C):</strong>
                 <span className="font-light">{sensor.temperature}</span>
               </div>
 
               {/* Humidity Info */}
               <div className="sensor-info flex justify-between">
-                <strong className="font-semibold">Humidity (%):</strong>
+                <strong className="font-semibold">Υγρασία (%):</strong>
                 <span className="font-light">{sensor.humidity}</span>
               </div>
 
               {/* Battery Info */}
               <div className="sensor-info flex justify-between">
-                <strong className="font-semibold">Battery (%):</strong>
+                <strong className="font-semibold">Μπαταρία (%):</strong>
                 <span className="font-light">{sensor.battery_percent}</span>
               </div>
 
@@ -133,7 +155,7 @@ export default function Page() {
 
               {/* Timestamp Info */}
               <div className="sensor-info flex justify-between">
-                <strong className="font-semibold">Timestamp:</strong>
+                <strong className="font-semibold">Ώρα Μέτρησης:</strong>
                 <span className="font-light">{new Date(sensor.timestamp).toLocaleString()}</span>
               </div>
             </div>
@@ -145,7 +167,7 @@ export default function Page() {
       <div className="chart-section mt-8 w-full">
         {/* Temperature Line Chart for selected room */}
         <div className="chart-container">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">📈 Temperature Trend</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">📈 Διάγραμμα Θερμοκρασίας</h2>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={sortedDataByTime}>
@@ -179,79 +201,8 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Humidity Levels Over Time Line Chart for selected room */}
-        <div className="chart-container">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">💧 Humidity Levels Over Time</h2>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={sortedDataByTime}>
-                <XAxis
-                  dataKey="timestamp"
-                  tickFormatter={(t) => new Date(t).toLocaleString()}
-                  interval="preserveStartEnd"
-                />
-                <YAxis />
-                <Tooltip
-                  labelFormatter={(t) => new Date(t).toLocaleString()}
-                  contentStyle={{
-                    backgroundColor: "#000",
-                    color: "#fff",
-                    borderRadius: "5px",
-                    padding: "10px",
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="humidity"
-                  name={selectedRoom}
-                  data={sortedDataByTime}
-                  stroke={roomColors[1]}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Battery Levels Over Time Line Chart for selected room */}
-        <div className="chart-container">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">🔋 Battery Levels Over Time</h2>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={sortedDataByTime}>
-                <XAxis
-                  dataKey="timestamp"
-                  tickFormatter={(t) => new Date(t).toLocaleString()}
-                  interval="preserveStartEnd"
-                />
-                <YAxis />
-                <Tooltip
-                  labelFormatter={(t) => new Date(t).toLocaleString()}
-                  contentStyle={{
-                    backgroundColor: "#000",
-                    color: "#fff",
-                    borderRadius: "5px",
-                    padding: "10px",
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="battery_percent"
-                  name={selectedRoom}
-                  data={sortedDataByTime}
-                  stroke={roomColors[2]}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Other charts here */}
       </div>
     </div>
   )
 }
-
