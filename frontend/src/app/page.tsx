@@ -32,9 +32,7 @@ export default function Page() {
         }
         return latest
       }, {} as Sensor) // Explicitly type the initial value as a Sensor
-      
-
-      setLatestPiTemperature(latestPi.raspberry_pi_temperature)
+       setLatestPiTemperature(latestPi.raspberry_pi_temperature)
     }
     fetchData()
   }, [])
@@ -97,7 +95,7 @@ export default function Page() {
         <p className="text-xl font-light text-gray-600">
           {latestPiTemperature !== null
             ? `${latestPiTemperature} °C`
-            : "No Raspberry Pi temperature data available"}
+            : "Δεν υπάρχουν διαθέσιμα δεδομένα θερμοκρασίας Raspberry Pi"}
         </p>
       </div>
 
@@ -201,7 +199,77 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Other charts here */}
+        {/* Humidity Levels Over Time Line Chart for selected room */}
+        <div className="chart-container">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">💧 Διάγραμμα Υγρασίας</h2>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={sortedDataByTime}>
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(t) => new Date(t).toLocaleString()}
+                  interval="preserveStartEnd"
+                />
+                <YAxis />
+                <Tooltip
+                  labelFormatter={(t) => new Date(t).toLocaleString()}
+                  contentStyle={{
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    borderRadius: "5px",
+                    padding: "10px",
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="humidity"
+                  name={selectedRoom}
+                  data={sortedDataByTime}
+                  stroke={roomColors[1]}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Battery Levels Over Time Line Chart for selected room */}
+        <div className="chart-container">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">🔋 Διάγραμμα Μπαταρίας</h2>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={sortedDataByTime}>
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(t) => new Date(t).toLocaleString()}
+                  interval="preserveStartEnd"
+                />
+                <YAxis />
+                <Tooltip
+                  labelFormatter={(t) => new Date(t).toLocaleString()}
+                  contentStyle={{
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    borderRadius: "5px",
+                    padding: "10px",
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="battery_percent"
+                  name={selectedRoom}
+                  data={sortedDataByTime}
+                  stroke={roomColors[2]}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   )
