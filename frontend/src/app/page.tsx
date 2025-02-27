@@ -26,13 +26,17 @@ export default function Page() {
       setSensors(data)
 
       // Find the most recent raspberry_pi_temperature measurement
-      const latestPi = data.reduce((latest: Sensor, sensor: Sensor) => {
-        if (sensor.raspberry_pi_temperature && (!latest || new Date(sensor.timestamp) > new Date(latest.timestamp))) {
-          return sensor
-        }
-        return latest
-      }, {} as Sensor) // Explicitly type the initial value as a Sensor
-       setLatestPiTemperature(latestPi.raspberry_pi_temperature)
+      const latestPi = data.reduce(
+        (latest: Sensor, sensor: Sensor) => {
+          if (!latest || new Date(sensor.timestamp) > new Date(latest.timestamp)) {
+            return sensor
+          }
+          return latest
+        },
+        null as Sensor | null,
+      )
+
+      setLatestPiTemperature(latestPi?.raspberry_pi_temperature || null)
     }
     fetchData()
   }, [])
