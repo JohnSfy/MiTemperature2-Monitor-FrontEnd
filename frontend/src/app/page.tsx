@@ -35,7 +35,7 @@ export default function Page() {
         },
         null as Sensor | null,
       )
-
+      console.log(JSON.stringify(latestPi))
       setLatestPiTemperature(latestPi?.raspberry_pi_temperature || null)
     }
     fetchData()
