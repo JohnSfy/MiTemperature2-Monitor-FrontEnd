@@ -21,10 +21,7 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      // const response = await fetch("https://crucial-lelah-tsigkani2-80186950.koyeb.app/sensors")
-      const response = await fetch("https://mitemperature2-webservice.onrender.com/sensors")
-       //const response = await fetch('http://192.168.1.5:8000/sensors')
-
+      const response = await fetch('https://lazarosadamos.site/sensors');
       const data = await response.json()
       setSensors(data)
 
